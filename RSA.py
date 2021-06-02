@@ -21,7 +21,7 @@ def get_keys():
 
 
 def RSA_encrypt(GOST_key, public_key, n):
-    return pow(GOST_key, public_key, n)
+    return pow(int.from_bytes(GOST_key,"big"), public_key, n)
 
 
 def RSA_decrypt(encrypted_key_client, private_key, n):

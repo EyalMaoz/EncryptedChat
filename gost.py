@@ -115,7 +115,7 @@ def GOST_encrypt(lst, my_GOST):
         text = int(''.join(map(str, numList)))
 
         for i in range(num):
-            text = my_GOST.encrypt(text)
+            text = my_GOST.encrypt_ecb_cts(text)
         encryptionList.append(str(text))
 
     return encryptionList

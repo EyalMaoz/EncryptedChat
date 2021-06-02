@@ -52,7 +52,7 @@ while True:
     text, my_GOST = BLOW_init(message,GOST_key)
 
     # encrypt message with GOST
-    message = GOST_encrypt(text, my_GOST)
+    message = BLOWfish_encrypt(text, my_GOST)
     encrypt_msg = " ".join(message)
 
     # send encrypted GOST key to client

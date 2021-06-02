@@ -6,6 +6,7 @@ import base64
 from RSA import get_keys, RSA_decrypt
 from elsig import verifyMessage
 from gost import *
+from blowfish_algo import BLOWfish_decrypt
 
 def decrypt_msg(msg):
     msg = str.encode(msg)
@@ -42,7 +43,9 @@ s.send(str(public_key).encode())
 
 while True:
     # receive encrypted GOST key
-    encrypted_key_client = s.recv(1024).decode()
+    encrypted_key_client =''
+    while encrypted_key_client=='':
+        encrypted_key_client = s.recv(1024).decode()
 
     # decrypt the encrypted GOST key using RSA decryption
     decrypted_key = RSA_decrypt(encrypted_key_client, private_key, n)
