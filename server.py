@@ -1,15 +1,14 @@
 # server.py
 import socket
 import time
-from blowfish_algo import * 
+from blowfish_algo import *
 import base64
 from RSA import RSA_encrypt
 from elsig import signMessage
-from gost import *
 
 
 print("\nWelcome to Chat Room\n")
-print("Initialising....\n")
+print("Initializing....\n")
 time.sleep(1)
 
 s = socket.socket()
@@ -18,7 +17,7 @@ ip = socket.gethostbyname(host)
 port = 1234
 s.bind((host, port))
 print(host, "(", ip, ")\n")
-name = input(str("Enter your name: "))
+name = 'server name'#input(str("Enter your name: "))
 
 s.listen(1)
 print("\nWaiting for incoming connections...\n")
@@ -34,12 +33,25 @@ conn.send(name.encode())
 n = int(conn.recv(1024).decode())
 public_key = int(conn.recv(1024).decode())
 
-# GOST key
-GOST_key = b"admin_key"
-# encrypted GOST key using RSA encryption with client's public key
-encrypted_key = RSA_encrypt(GOST_key, public_key, n)
+# Blowfish key
+Blowfish_key = b"admin_key"
+# Send key length
+key_len = len(Blowfish_key)
+conn.send(str(key_len).encode())
 
+# encrypted Blowfish key using RSA encryption with client's public key
+blowfish_encrypted_key = RSA_encrypt(Blowfish_key, public_key, n)
+# send encrypted Blowfish key to client
+conn.send(str(blowfish_encrypted_key).encode())
+print('The blowfish key i sent:',Blowfish_key)
 
+message = b'First message'
+cipher = Cipher(Blowfish_key)
+encrypt_msg = b"".join(cipher.encrypt_ecb_cts(message))
+
+# send Blowfish encrypted message to client
+conn.send(encrypt_msg)
+'''
 while True:
     message = input(str("Me : ")).strip()
     if message == "[e]":
@@ -48,17 +60,17 @@ while True:
         print("\n")
         break
 
-# text = fitted text to use GOST with # my_GOST = GOST object
-    text, my_GOST = BLOW_init(message,GOST_key)
+    # text = fitted text to use Blowfish with BLOW_object
+    text, BLOW_object = BLOW_init(message,Blowfish_key)
 
-    # encrypt message with GOST
-    message = BLOWfish_encrypt(text, my_GOST)
-    encrypt_msg = " ".join(message)
+    # encrypt message with Blowfish
+    encrypt_msg = BLOWfish_encrypt(text, BLOW_object)
+    encrypt_msg = ''.join(encrypt_msg)
 
-    # send encrypted GOST key to client
+    # send encrypted Blowfish key to client
     conn.send(str(encrypted_key).encode())
 
-    # send GOST encrypted message to client
+    # send Blowfish encrypted message to client
     conn.send(encrypt_msg.encode())
 
     # create and send signature to client
@@ -70,3 +82,4 @@ while True:
     print(s_name, ":", message)
 
     
+'''
