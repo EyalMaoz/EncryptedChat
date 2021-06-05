@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+'''#!/usr/bin/env python
 
 sbox = (
     (4, 10, 9, 2, 13, 8, 0, 14, 6, 11, 1, 12, 7, 15, 5, 3),
@@ -143,3 +143,4 @@ def GOST_decrypt(lst, key):
 
     decryptionText = " ".join(decryptionList).lower()  # join all the words in list
     return decryptionText
+'''

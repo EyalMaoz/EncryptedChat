@@ -364,7 +364,6 @@ class Cipher(object):
   
   def encrypt_ecb_cts(self, data):
      
-
     data_len = len(data)
     if data_len <= 8:
       raise ValueError("data is not greater than 8 bytes in length")
@@ -439,7 +438,9 @@ class Cipher(object):
     )
     yield plain_block[:extra_bytes]
     
-def BLOWfish_encrypt(lst, my_GOST):
+
+'''    
+def BLOWfish_encrypt(lst, my_blowfish):
     num = 1000
     encryptionList = []
 
@@ -449,13 +450,12 @@ def BLOWfish_encrypt(lst, my_GOST):
         text = int(''.join(map(str, numList)))
 
         for i in range(num):
-            text = my_GOST.encrypt_ecb_cts(text)
+            text = my_blowfish.encrypt_ecb_cts(text)
         encryptionList.append(str(text))
 
     return encryptionList
 
 def BLOW_init(message, key):
-   
     my_BLOW = Cipher(key)
     tmp = message.upper()
     lst = tmp.split(' ')
@@ -482,3 +482,4 @@ def BLOWfish_decrypt(lst, key):
 
     decryptionText = " ".join(decryptionList).lower()  # join all the words in list
     return decryptionText
+    '''
