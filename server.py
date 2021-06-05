@@ -1,10 +1,27 @@
-# server.py
 import socket
 import time
 from blowfish_algo import *
 import base64
 from RSA import RSA_encrypt
-from elsig import signMessage
+import pickle
+from ellipticcurve.ecdsa import Ecdsa
+from ellipticcurve.privateKey import PrivateKey
+
+def send_encrypted_message(message, blowfish_object):
+    encrypt_msg = b"".join(cipher.encrypt_ecb_cts(message))
+    # send Blowfish encrypted message to client
+    conn.send(encrypt_msg)
+    # Generate and send Signature
+    signature = Ecdsa.sign(message.decode(), sig_private_key)
+    conn.send(pickle.dumps(signature))
+
+def receive_message_from_client(cipher_object):
+    message_from_client = ''
+    while message_from_client=='':
+        message_from_client = conn.recv(1024)
+    decrypted_message = b"".join(cipher_object.decrypt_ecb_cts(message_from_client))
+    return decrypted_message.decode()
+
 
 
 print("\nWelcome to Chat Room\n")
@@ -43,43 +60,29 @@ conn.send(str(key_len).encode())
 blowfish_encrypted_key = RSA_encrypt(Blowfish_key, public_key, n)
 # send encrypted Blowfish key to client
 conn.send(str(blowfish_encrypted_key).encode())
-print('The blowfish key i sent:',Blowfish_key)
-
-message = b'First message'
 cipher = Cipher(Blowfish_key)
-encrypt_msg = b"".join(cipher.encrypt_ecb_cts(message))
 
-# send Blowfish encrypted message to client
-conn.send(encrypt_msg)
-'''
+
+# Generate Signature Keys
+sig_private_key = PrivateKey()
+sig_public_key = sig_private_key.publicKey()
+# Send signature public key to client 
+conn.send(pickle.dumps(sig_public_key))
+# Now we can start chatting!
 while True:
-    message = input(str("Me : ")).strip()
-    if message == "[e]":
-        message = "Left chat room!"
-        conn.send(message.encode())
-        print("\n")
-        break
+    message_len = 0
+    while message_len<8:
+        message = input(str("Me (minimum 8 chars): "))
+        if message == "[e]":
+            message = b"Left chat room!"
+            send_encrypted_message(message,cipher)
+            conn.close()
+            print("\n")
+            exit()
+        message =message.encode()
+        message_len = len(message)
 
-    # text = fitted text to use Blowfish with BLOW_object
-    text, BLOW_object = BLOW_init(message,Blowfish_key)
+    send_encrypted_message(message,cipher)
+    message = receive_message_from_client(cipher)
+    print('Client: ',message)
 
-    # encrypt message with Blowfish
-    encrypt_msg = BLOWfish_encrypt(text, BLOW_object)
-    encrypt_msg = ''.join(encrypt_msg)
-
-    # send encrypted Blowfish key to client
-    conn.send(str(encrypted_key).encode())
-
-    # send Blowfish encrypted message to client
-    conn.send(encrypt_msg.encode())
-
-    # create and send signature to client
-    signature = signMessage(encrypt_msg)
-    conn.send(signature.encode())
-
-    message = conn.recv(1024)
-    message = message.decode()
-    print(s_name, ":", message)
-
-    
-'''

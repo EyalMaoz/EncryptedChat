@@ -1,17 +1,41 @@
 # client.py
 import socket
 import time
+import pickle
 import blowfish_algo as blowfish
 import base64
 from RSA import get_keys, RSA_decrypt
 from elsig import verifyMessage
 from blowfish_algo import *
+from ellipticcurve.ecdsa import Ecdsa
+from ellipticcurve.privateKey import PrivateKey
 
-'''def decrypt_msg(msg):
-    msg = str.encode(msg)
-    cipher_text = base64.b64decode(msg)
-    plain_text = b"".join(cipher.decrypt_ecb_cts(cipher_text))
-    return plain_text'''
+def receive_message_from_server(cipher_object):
+    #Get encrypted message
+    encrypted_message = ''
+    while encrypted_message=='':
+        encrypted_message = s.recv(1024)
+
+    decrypted_message = b"".join(cipher_object.decrypt_ecb_cts(encrypted_message))
+    # Get the signature
+    signature=''
+    while signature=='':
+        signature = s.recv(1024)
+    signature = pickle.loads(signature)
+
+    if Ecdsa.verify(decrypted_message.decode(), signature, key_for_signature):
+        return decrypted_message.decode()
+    else:
+        print('Signature wasn\'t identified!!! Leaving chat')
+        s.close()
+        exit()
+
+def send_encrypted_message(message,cipher_object):
+    encrypt_msg = b"".join(cipher_object.encrypt_ecb_cts(message))
+    # send Blowfish encrypted message to client
+    s.send(encrypt_msg)
+
+
 
 print("\nWelcome to Chat Room\n")
 print("Initializing....\n")
@@ -59,14 +83,38 @@ decrypted_blowfish_key =int.to_bytes(
 # Generate Cypher object to use decryption of BlowFish
 cipher_object = Cipher(decrypted_blowfish_key)
 
-#Get encrypted first message
-encrypted_message = ''
-while encrypted_message=='':
-    encrypted_message = s.recv(1024)
+# Get public key for signature
+key_for_signature = ''
+while key_for_signature=='':
+    key_for_signature = s.recv(1024)
+key_for_signature = pickle.loads(key_for_signature)
 
-decrypted_message = b"".join(cipher_object.decrypt_ecb_cts(encrypted_message))
 
-print(decrypted_message.decode())
+# Now we can start chatting!
+while True:
+    message = receive_message_from_server(cipher_object)
+    print(server_name,': ',message)
+    message_len =0
+    while message_len<8:
+        message = input(str("Me (minimum 8 chars): "))
+        message =message.encode()
+        message_len = len(message)
+
+
+    if message == "[e]":
+        message = b"Left chat room!"
+        send_encrypted_message(message,cipher_object)
+        s.close()
+        print("\n")
+        exit()
+    send_encrypted_message(message,cipher_object)
+    
+
+
+
+
+#########################SIGNATURE####################################
+
 '''
 print('The encrypted message i got:',encrypted_message)
 print('The decrypted message i got:',BLOWfish_decrypt(encrypted_message,decrypted_blowfish_key.to_bytes(len("admin_key"),'big')))

@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 27 17:56:47 2021
-
-@author: shaha
-"""
-
-# Import libraries
 from struct import Struct, error as struct_error
 from itertools import cycle as iter_cycle
 
@@ -365,8 +357,9 @@ class Cipher(object):
   def encrypt_ecb_cts(self, data):
      
     data_len = len(data)
+    
     if data_len <= 8:
-      raise ValueError("data is not greater than 8 bytes in length")
+      bytes.ljust(data,8,'\0')
       
     S1, S2, S3, S4 = self.S
     P = self.P
@@ -483,3 +476,6 @@ def BLOWfish_decrypt(lst, key):
     decryptionText = " ".join(decryptionList).lower()  # join all the words in list
     return decryptionText
     '''
+
+
+
